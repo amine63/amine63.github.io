@@ -1,0 +1,161 @@
+---
+title: "3D Data Visualization in R and Applications in Business"
+author: "Elouafi Amine"
+format: html
+editor: visual
+---
+
+## Agenda
+
+-   Introduction
+
+-   Ecosystem for 3D visualization
+
+-   Data preparation
+
+-   Example of 3D plot
+
+-   Basic 3D plots
+
+-   Business Aplications
+
+-   plitfalls of 3D plots
+
+-   summery
+
+## Introduction
+
+**What is 3D visualization.**
+
+3D Visualization is the practice of representing Data in the 3 dimensional space (with X,Y and Z axes) to give a perception of Height, width and depth in the visualized information. It allows users to see relationship among three variables, instead of the usual 2D dimensions (X,Y)
+
+## R Ecosystem for 3D Visualization
+
+Core 3D graphics packages:
+
+<u>rgl</u> : it is a low-level 3D graphics, built with OpenGL/WebGL as the rendering backend.here is an axample:
+
+```{r}
+#| echo: true
+library(rgl)
+library(MASS)
+# from the fitdistr example
+set.seed(123)
+x <- rgamma(100, shape = 5, rate = 0.1)
+fit <- fitdistr(x, dgamma, list(shape = 1, rate = 0.1), lower = 0.001)
+loglik <- function(shape, rate) sum(dgamma(x, shape=shape, rate=rate, 
+                                           log=TRUE))
+loglik <- Vectorize(loglik)
+xlim <- fit$estimate[1]+4*fit$sd[1]*c(-1,1)
+ylim <- fit$estimate[2]+4*fit$sd[2]*c(-1,1)
+
+mfrow3d(1, 2, sharedMouse = TRUE)
+persp3d(loglik, 
+        xlim = xlim, ylim = ylim,
+        n = 30)
+zlim <- fit$loglik + c(-qchisq(0.99, 2)/2, 0)
+next3d()
+persp3d(loglik, 
+        xlim = xlim, ylim = ylim, zlim = zlim,
+        n = 30)
+```
+
+<u>scatterplot3d</u> : Scatterplot3D is also used to create static 3D scatter Plots using base R graphics. it generates a scatter plot in 3D space using parallel projection. Most features of the R graphics sytems can be applied in Scatterplot3d, amoung them are vectorizing of colors or plotting symbols and mathematical annotation (Murrell and Ihaka, 2000)
+
+## Data Preparation for 3D Plots
+
+-   Pick three numeric variables that have a logical relationship; random triples variables rarely come up with useful patterns
+
+-   For 3D scatter plots, your data can stay in a data frame with only one column per variable (X,Y,Z) -Dropping rows if only a few values are missing -**Imputing** using mean/median or Model-based methods, being careful not to distort patterns.
+
+-   Large differences in scale can make the 3D plot hard to read, Normalization, standardization or Log transforms can help so all three axes are on comparable scales.
+
+## An example to fully understand how Scatterplot3d works in R
+
+```{r}
+#| echo: true
+# Load the package for 3D scatterplots
+library(scatterplot3d)
+
+# Use the built-in mtcars dataset
+# We will plot horsepower (hp), weight (wt), and miles per gallon (mpg)
+
+# Assign variables for clarity in teaching
+hp  <- mtcars$hp     # X-axis: Horsepower
+wt  <- mtcars$wt     # Y-axis: Weight
+mpg <- mtcars$mpg    # Z-axis: Miles per gallon
+
+# Create a basic 3D scatterplot
+scatterplot3d(
+  x = hp,
+  y = wt,
+  z = mpg,
+  pch = 19,                 # Solid points
+  color = "blue",           # Point color
+  main = "3D Scatterplot: Horsepower, Weight, and MPG",
+  xlab = "Horsepower (HP)",
+  ylab = "Weight (WT)",
+  zlab = "Miles per Gallon (MPG)"
+)
+
+```
+
+## Basic 3D Plot Examples in R
+
+-   create a basic 3D plot
+
+    -   define x and y
+
+        ```         
+        x <- -20:20 y <- -20:20
+        ```
+
+    -   we create a z value and have a correlation to x and y
+
+        ```         
+        z_val <- function(x, y) {  sqrt(x ^ 2 + y ^ 2)}
+        ```
+
+        ```         
+        z<-outer(x, y, z_val)
+        ```
+
+    -   create a 3D plot
+
+        ```         
+        persp(x, y, z)
+        ```
+
+## Business Application of 3D Visualization
+
+3D visualizations in R is used communicate insights to non-technical stakeholders. It helps support better decisions in domains like risk, operations, marketing and finance.
+
+-   Marketing and Finance: 3D plots can show how sales depend on two variables at once, look at price and advertising spend.
+
+-   finance and Risk: visualization with axes such as risk, return and market cap or credit rating, this helps analysts see underperforming vs efficient assets.
+
+-   Operations: 3D plots helps mangers and operation specialists quickly visualize production speed, cost per unit and defect rate, this helps identify "good" zones from "bad" ones.
+
+## Pitfalls of 3D plot
+
+-   Harder to read accurately: perspective and depth make it harder to judge exact values and overlapping points or surfaces can hide data.
+
+-   Design and technical limitations :
+
+    -   base graphics as a static 3D plot lock into a single viewpoint, if the chosen angle is poor, important patterns are hidden.
+
+    -   labels, legends and color scales can be cluttered or hard to read when projected into 3D, especially when many categories are shown at once.
+
+## Summery
+
+This mini project explores how R is used to create 3D visualizations to better understand complex business data. Main focus was on R packages like rgl and scatterplot3d that reveal relationship between three or more variables at once.
+
+On the business side, it shows how 3D graphs support domains like sales and marketing analysis, risk and financial evaluation and operations optimization
+
+## References
+
+-   Gershon, N., & Eick, S. G. (1998). Scaling to new heights. IEEE Computer Graphics and Applications, 18(4), 16–17.
+
+-   Murrell, P., & Ihaka, R. (2000). An approach to providing mathematical annotation in plots. *Journal of Computational and Graphical Statistics, 9*(3), 582–599.
+
+-   Sutherland, I. (1963). *Sketchpad: A man-machine graphical communication system* (Unpublished doctoral dissertation). MIT Lincoln Laboratory.
