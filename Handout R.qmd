@@ -1,0 +1,101 @@
+---
+title: "3D Data Visualization in R and Applications in Business"
+author: "Amine Elouafi No: 4001109492  elouafi.amine@stud.hs-fresenius.de"
+format: html
+editor: visual
+Authornote: any concerns regarding this paper, should be adressed to Amine ELOUAFI
+---
+
+\newpage
+
+## Abstract
+
+Three-dimensional (3D) data visualization has become a very essential analytical technique for examining relationships between different variables in today's data-driven environments. Within the R programming ecosystem, tools such as rgl and scatterplot3d provide accessible methods for creating 3D graphical representations that show outliers, interactions and structural patterns, that can be not highlighted in the traditional 2D dimensional displays (Smith, 2020).
+
+In Business applications, visual techniques have a critical role in domains such as market analysis, financial forecasting, operational performance monitoring and customer segmentation. 3D plots can show how a companies sales outcomes vary across pricing strategies and customers demographics. this helps support more informed managerial decision making. Similarly, both risk management and investment evaluations often depend on understanding the joint behaviors of Probability, impact and cost. this is more effectively demonstrated through 3D visual formats (Lee & Martins, 2018). The integration of 3D visualization enhances a company´s ability to translate raw data into visualized and actionable insights, helping improve both evidence based communication and strategic planning.
+
+\newpage
+
+## Introduction
+
+3D Data visualization is an important tool for exploring and interpreting complex, multidimensional datasets in business. By creating three variables at the same time, 3D visualization reveal patterns and interactions that may be obscured in traditional two-dimensional charts (Behrisch, Schreck, & Keim, 2019). Applied in business contexts, 3D visualization enhances decision-making by enabling managers to uncover insights, identify opportunities for improvement and communicate finding clearly.
+
+## What is 3D visualization
+
+R allows to build three dimensional charts, mainly thanks to the **rgl** package.it can be useful in specific situations to show missing interpretations.
+
+## What is **rgl**
+
+The **rgl** pachage is the best tool to work in 3D from R. **rgl** automatically builds interactive charts. zooming and rotating can indeed make the chart more insightful.
+
+-   install.packages("rgl")
+
+library(rgl)
+
+-   Load example data
+
+data(iris)
+
+-   Open a new 3D device
+
+open3d()
+
+-   3D scatterplot: Sepal.Length (x), Sepal.Width (y), Petal.Length (z)
+
+plot3d( x = iris$Sepal.Length,
+  y     = iris$Sepal.Width, z = iris$Petal.Length,
+  col   = as.numeric(iris$Species), \# color by species type = "s", \# draw spheres size = 0.6, \# point size xlab = "Sepal length", ylab = "Sepal width", zlab = "Petal length" )
+
+## What is **Scatterplot3d**
+
+Scatterplot3d is an R package for the visualization of multivariate data is a three dimensional space. R itself " A language and environment for statistical computing" (R Development Core Team, 2004a).
+
+## what do we mean by Data Preparation for 3D Plots
+
+-   Preparing data for 3D plots in R essentially involves handling, scaling and rotating missing Data, and your data into suitable structures(data frame with 3 numeric variables).
+
+-   making sure variables are numeric:
+
+    \`\`\`{data$x <- as.numeric(data$x)} data$y <- as.numeric(data$y) data$z <- as.numeric(data$z)
+
+    \`\`\`
+
+-   Sorting and aligning the data:
+
+    data \<- data\[order(data$x, data$y), \]
+
+-   Handling missing values:
+
+    data \<- na.omit(data)
+
+## Business application of 3D visualization
+
+3D visualization in R can be of support for businesses by turning multi-factor and complex situations into clear visualizations managers can discuss and explore.
+
+-   To better understand performance drivers, analysts can plot three business measures at the same time, this helps see how different variables move together.
+
+-   In customer and finance analytics and risk, 3D plots can position customer and deals based on value,risk, and engagement, helping managers target design different actions.
+
+-   with R packages like rgl, charts can be made interactive and placed into a dashboard so users have the ability to rotate, zoom and filter, rather than looking at a static 2D images. In business intelligence or KPI dashboard, these interactive 3D plots has become the best and easy way for non-technical stakeholders to *play* with data.
+
+## Summery
+
+In this Project, we looked at how R can be of good value to create 3D plots that help businesses make better decisions and understand complex Data. It emphasizes not only the creation of 3d graphs, but how they stand out from the simple tables and 2D plots.
+
+The work shows key R libraries for 3D visualization, such as *scatterplot3d* and *rgl* and shows how to use them to come up with 3D graphs. From a business perspective, the project connects these techniques to practical tasks like evaluating financial risk, analyzing sales drivers and monitoring operational performance. Explaning how 3D view can reveal interactions between variables, nonlinear effects and reveal clusters. for example how sales changes accordingly with advertising and price, or how risk varies with both time and market exposure.
+
+\newpage
+
+## References.
+
+-   Behrisch, M., Schreck, T., & Keim, D. A. (2019). Visual analytics for business data: Exploring multidimensional datasets. Springer.
+
+-   Lee, S., & Martins, R. (2018). Risk visualization approaches in quantitative decision-making. Journal of Business Analysis, 12(3), 145–162.
+
+-   R Development Core Team. (2004). R: A language and environment for statistical computing. R Foundation for Statistical Computing. -https://www.R-project.org/
+
+-   Smith, J. (2020). Advanced data visualization in R. Quantitative Methods Publishing.
+
+## Affidavit
+
+I hereby affirm that this submitted paper was authored unaided and solely by me. Additionally, no other sources than those in the reference list were used. Parts of this paper, including tables and figures, that have been taken either verbatim or analogously from other works have in each case been properly cited with regard to their origin and authorship. This paper either in parts or in its entirety, be it in the same or similar form, has not been submitted to any other examination board and has not been published. I acknowledge that the university may use plagiarism detection software to check my thesis. I agree to cooperate with any investigation of suspected plagiarism and to provide any additional information or evidence requested by the university.
