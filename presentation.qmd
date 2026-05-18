@@ -1,0 +1,271 @@
+---
+title: "Interactive Visualization in R"
+subtitle: " & Applications in Business"
+author: "[Amine Elouafi] | [401109492] | [elouafi.amine@stud.hs-fresenius.de]"
+date: 05/19/2026
+format:
+  revealjs:
+    self-contained: true
+    theme: simple
+    slide-number: true
+    transition: fade
+    code-fold: false
+    highlight-style: github
+    footer: "Data Analysis for Decision-Making | Fresenius University "
+bibliography: references.bib
+---
+
+## Agenda
+
+1.  What is Interactive Data Visualization?
+2.  Why it matters in Business
+3.  The Boston Housing Dataset as an example
+4.  Live R Demo with `plotly`
+5.  Business Applications
+6.  Class Exercise
+
+------------------------------------------------------------------------
+
+## What is Interactive Visualization?
+
+> An interactive chart allows to perform actions **zooming, hovering data through three dimensions** to reveal patterns invisible in 2D charts
+
+::::: columns
+::: {.column width="50%"}
+**Traditional 2D**
+
+-   Bar charts
+-   Line graphs
+-   Scatter plots
+-   ✅ Simple, familiar
+-   ❌ Limited to 2 variables at once
+:::
+
+::: {.column width="50%"}
+**3D Visualization**
+
+-   3D scatter plots
+-   Surface plots
+-   3D bar charts
+-   ✅ Shows 3 variables together
+-   ❌ Can distort if used poorly
+:::
+:::::
+
+------------------------------------------------------------------------
+
+## When Does Interactive 3D Add Value?
+
+**Use Interactive 3D when:**
+
+-   Three continuous variables must be compared simultaneously.
+-   Clusters in high-dimensional data need to be revealed.
+-   An interactive HTML format is available (rotation purposes).
+
+**Avoid Interactive 3D when:**
+
+-   The chart will be printed as a static image.
+-   Only two variables carry meaningful information.
+-   The audience is unfamiliar with 3D interpretation.
+
+::: callout-tip
+Always prefer **interactive** 3D (HTML) over static 3D (PDF/print)
+:::
+
+------------------------------------------------------------------------
+
+## The Boston Housing Dataset
+
+**Source:** @harrison1978hedonic — 506 census tracts in Boston
+
+**Available in R:** `MASS` package (no download needed!)
+
+```{r}
+library(MASS)
+data("Boston")
+head(Boston)
+```
+
+| Variable | Description                            |
+|----------|----------------------------------------|
+| `medv`   | Median home value (\$1,000s)           |
+| `rm`     | Average rooms per dwelling             |
+| `lstat`  | \% lower-status population             |
+| `crim`   | Per capita crime rate                  |
+| `age`    | \% owner-occupied units built pre-1940 |
+
+------------------------------------------------------------------------
+
+## Why These Three Variables?
+
+**Business question:**\
+*"How do neighborhood characteristics jointly affect property values?"*
+
+-   `rm` → quality / size signal
+-   `lstat` → socioeconomic signal\
+-   `medv` → outcome (price)
+
+A real estate firm, bank, or urban planner would care deeply about this relationship.
+
+------------------------------------------------------------------------
+
+## Setting Up in R
+
+```{r}
+# Install packages (only needed once)
+#install.packages("plotly")
+#install.packages("MASS")
+
+# Load libraries
+library(plotly)
+library(MASS)
+
+# Load dataset
+data("Boston")
+
+# Quick check
+dim(Boston)      # 506 rows, 14 columns
+summary(Boston[, c("rm", "lstat", "medv")])
+```
+
+------------------------------------------------------------------------
+
+## 3D Scatter Plot — Code
+
+```{r}
+#| echo: false
+fig <- plot_ly(
+  data   = Boston,
+  x      = ~rm,
+  y      = ~lstat,
+  z      = ~medv,
+  type   = "scatter3d",
+  mode   = "markers",
+  marker = list(
+    size       = 4,
+    color      = ~medv,
+    colorscale = "Viridis",
+    showscale  = TRUE
+  )
+)
+
+fig <- fig %>% layout(
+  title = "Boston Housing: Rooms, Status & Home Value",
+  scene = list(
+    xaxis = list(title = "Avg Rooms (rm)"),
+    yaxis = list(title = "Lower Status % (lstat)"),
+    zaxis = list(title = "Median Value ($1000s)")
+  )
+)
+
+fig
+```
+
+------------------------------------------------------------------------
+
+## 3D Scatter Plot — What We See
+
+**Key observations:**
+
+-   **High `rm` + Low `lstat`** → High home values (yellow cluster at the top, approaching \$50k)
+-   **Low `rm` + High `lstat`** → Low home values (dark purple cluster at the bottom, around \$10k)
+-   The **Viridis color scale** reinforces the z-axis — yellow = high value, purple = low value
+-   The data forms a **diagonal ridge** rising from high `lstat`/low `rm` toward low `lstat`/high `rm`
+-   A small cluster of **very high value homes** (\$45–50k) appears isolated at low `lstat` and high `rm`, suggesting a premium market segment
+
+::: callout-note
+Try rotating the chart in the HTML version to see the full structure!
+:::
+
+------------------------------------------------------------------------
+
+## 3D Surface Plot — Code
+
+```{r}
+# Fit linear model
+model <- lm(medv ~ rm + lstat, data = Boston)
+
+# Build prediction grid
+rm_seq    <- seq(min(Boston$rm),    max(Boston$rm),    length.out = 50)
+lstat_seq <- seq(min(Boston$lstat), max(Boston$lstat), length.out = 50)
+grid      <- expand.grid(rm = rm_seq, lstat = lstat_seq)
+grid$pred <- predict(model, newdata = grid)
+z_matrix  <- matrix(grid$pred, nrow = 50, ncol = 50)
+
+# Surface plot
+surface_fig <- plot_ly(
+  x = ~rm_seq, y = ~lstat_seq, z = ~z_matrix,
+  type = "surface", colorscale = "RdBu"
+) %>%
+  layout(
+    title = "Predicted Home Value Surface",
+    scene = list(
+      xaxis = list(title = "Avg Rooms"),
+      yaxis = list(title = "Lower Status %"),
+      zaxis = list(title = "Predicted Value")
+    )
+  )
+
+surface_fig
+```
+
+------------------------------------------------------------------------
+
+## Surface Plot — Business Interpretation
+
+The surface shows the **predicted median home value** across all combinations of `rm` and `lstat`
+
+**How a business uses this:**
+
+| Business            | Use Case                                  |
+|---------------------|-------------------------------------------|
+| 🏠 Real Estate Firm | Identify undervalued vs premium zones     |
+| 🏦 Bank / Lender    | Assess collateral risk by neighborhood    |
+| 🏙️ Urban Planner    | Target investment in low-value areas      |
+| 📊 Investment Fund  | Screen property acquisition opportunities |
+
+------------------------------------------------------------------------
+
+## Business Applications of 3D Visualization
+
+**Beyond real estate:**
+
+-   **Customer Segmentation** — Age × Income × Spending Score
+-   **Financial Risk** — Two risk factors × Portfolio loss
+-   **Supply Chain** — Lead time × Order qty × Cost
+-   **Marketing** — Campaign spend × Channel × Conversion rate
+
+::: callout-important
+The key is always the same: use 3D when **three variables together** tell a story that two cannot.
+:::
+
+------------------------------------------------------------------------
+
+## Key Takeaways
+
+✅ 3D visualization reveals **multivariate relationships** hidden in 2D
+
+✅ `plotly` in R makes it **interactive and easy** to implement
+
+✅ The Boston Housing dataset provides a **realistic business context**
+
+✅ Always ask: *does the third dimension add genuine insight?*
+
+✅ Use **interactive HTML** — never static 3D for print
+
+------------------------------------------------------------------------
+
+## References
+
+::: {#refs}
+:::
+
+------------------------------------------------------------------------
+
+## Thank You
+
+**Questions?**
+
+Amine Elouafi\
+elouafi.amine\@stud.hs-fresenius.de\
+Matriculation Number: 401109492 

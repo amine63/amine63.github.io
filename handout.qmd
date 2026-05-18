@@ -1,0 +1,234 @@
+---
+title: "Interactive Visualization in R and Applications in Business"
+shorttitle: "3D Data Visualization in R"
+author:
+  - name: "[Amine Elouafi]"
+    email: "[elouafi.amine@stud.hs-fresenius.de]"
+    affiliations:
+      - name: "Fresenius University of Applied Sciences"
+date: 05/19/2026
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-depth: 3
+  pdf:
+    documentclass: article
+    papersize: a4
+    toc: true
+    number-sections: true
+bibliography: references.bib
+csl: apa.csl
+abstract: |
+  Three-dimensional (3D) for interactive data visualization is an increasingly valuable tool in business analytics, enabling decision-makers to perceive patterns and relationships across multiple variables simultaneously. This handout introduces the theoretical foundations of 3D visualization, explains why and when it adds value over traditional 2D charts, and demonstrates practical implementation in R using the Boston Housing dataset from the MASS package. Key packages covered include plotly for interactive 3D graphics. A beginner-friendly exercise is included to reinforce the concepts discussed in the presentation.
+
+---
+
+
+
+# Introduction
+
+In an era of increasing data complexity, businesses are under growing pressure to extract meaningful insights from large, multidimensional datasets. Traditional two-dimensional (2D) charts — bar charts, line graphs, scatter plots — remain useful, but they are inherently limited when three or more variables need to be examined simultaneously [@wilke2019fundamentals]. Three-dimensional (3D) data visualization addresses this limitation by adding a third visual axis, allowing analysts and decision-makers to perceive relationships that would otherwise remain hidden.
+
+This handout accompanies the presentation on *Interactive Visualization in R and Applications in Business*. It provides additional background, explains key concepts, and offers reproducible R code that demonstrates how to build interactive 3D visualizations using real-world data.
+
+# Why Interactive 3D Visualization Matters in Business 
+
+## Limitations of 2D Charts
+
+Most business dashboards rely exclusively on 2D representations. While effective for simple comparisons, these formats struggle when:
+
+- Three or more continuous variables must be compared at once
+- Clusters or groupings in high-dimensional data need to be revealed
+- The relationship between an outcome and two predictors must be communicated simultaneously
+
+## Benefits of Interactive 3D Visualization
+
+@few2012show argues that the goal of any visualization is to reduce cognitive load while maximizing insight. When used appropriately,Interactive 3D charts can:
+
+1. **Reveal multivariate relationships** — patterns between three variables become immediately visible.
+2. **Support spatial reasoning** — decision-makers can mentally rotate and explore data.
+3. **Enhance communication** — interactive 3D charts engage audiences more effectively than static plots.
+4. **Identify clusters and outliers** — groups that overlap in 2D often separate clearly in 3D space.
+
+## When NOT to Use the interactive 3D Visualization
+
+It is equally important to recognize when Interactive visualization is inappropriate. Static 3D charts printed on paper often distort perception due to perspective [@healy2018data]. The general rule is: use Interactive 3D visualization only when the third dimension carries genuine informational value, and always prefer interactive formats (e.g., HTML with rotation) over static ones.
+
+# The Boston Housing Dataset
+
+## Overview
+
+The Boston Housing dataset, available in R's `MASS` package, contains housing data collected by @harrison1978hedonic for 506 census tracts in the Boston metropolitan area. It has been widely used in statistics, machine learning, and data visualization research.
+
+## Key Variables
+
+The dataset contains 14 variables. For this analysis, we focus on three:
+
+| Variable | Description |
+|----------|-------------|
+| `medv`   | Median value of owner-occupied homes (in $1,000s) — our outcome |
+| `rm`     | Average number of rooms per dwelling |
+| `lstat`  | Percentage of lower-status population |
+
+These three variables are particularly relevant for a business context: a real estate company, bank, or urban planning agency could use this relationship to understand how living conditions and socioeconomic factors jointly influence property values.
+
+#  Interactive 3D Visualization in R with plotly
+
+## Package Overview
+
+The `plotly` package [@sievert2020interactive] provides an R interface to the Plotly JavaScript library. It produces fully interactive HTML visualizations that users can rotate, zoom, and hover over — making it ideal for Interactive charts in academic presentations and business dashboards.
+
+## Installation and Setup
+
+```{r}
+# Install packages if not already installed
+#install.packages("plotly")
+#install.packages("MASS")
+
+# Load libraries
+library(plotly)
+library(MASS)
+
+# Load the Boston Housing dataset
+data("Boston")
+```
+
+
+## Basic 3D Scatter Plot
+
+The most fundamental 3D chart is a scatter plot with three continuous axes. The code below plots median home value (`medv`) against average rooms (`rm`) and lower-status population percentage (`lstat`).
+
+```{r}
+# Basic 3D scatter plot
+fig <- plot_ly(
+  data = Boston,
+  x = ~rm,
+  y = ~lstat,
+  z = ~medv,
+  type = "scatter3d",
+  mode = "markers",
+  marker = list(
+    size = 4,
+    color = ~medv,
+    colorscale = "Viridis",
+    showscale = TRUE
+  )
+)
+
+fig <- fig %>% layout(
+  title = "Boston Housing: Rooms, Status, and Home Value",
+  scene = list(
+    xaxis = list(title = "Avg Rooms (rm)"),
+    yaxis = list(title = "Lower Status % (lstat)"),
+    zaxis = list(title = "Median Home Value ($1000s)")
+  )
+)
+
+fig
+```
+
+
+**What to observe:** Homes with fewer rooms and higher lower-status populations cluster at low values, while high-room, low-lstat neighborhoods command premium prices. The Viridis color scale reinforces the z-axis (home value), making the trivariate relationship immediately intuitive — a pattern no single 2D chart could capture.
+
+## 3D Surface Plot
+
+A surface plot is useful when we want to visualize a smooth function over two predictors. Here we use a simple linear model to generate a predicted surface.
+
+```{r}
+# Fit a linear model
+model <- lm(medv ~ rm + lstat, data = Boston)
+
+# Create a grid of values
+rm_seq   <- seq(min(Boston$rm),    max(Boston$rm),    length.out = 50)
+lstat_seq <- seq(min(Boston$lstat), max(Boston$lstat), length.out = 50)
+grid     <- expand.grid(rm = rm_seq, lstat = lstat_seq)
+
+# Predict values over the grid
+grid$medv_pred <- predict(model, newdata = grid)
+
+# Reshape for surface plot
+z_matrix <- matrix(grid$medv_pred, nrow = 50, ncol = 50)
+
+# Plot
+surface_fig <- plot_ly(
+  x = ~rm_seq,
+  y = ~lstat_seq,
+  z = ~z_matrix,
+  type = "surface",
+  colorscale = "RdBu"
+)
+
+surface_fig <- surface_fig %>% layout(
+  title = "Predicted Home Value Surface",
+  scene = list(
+    xaxis = list(title = "Avg Rooms (rm)"),
+    yaxis = list(title = "Lower Status % (lstat)"),
+    zaxis = list(title = "Predicted Median Value")
+  )
+)
+
+surface_fig
+```
+
+
+
+**Business interpretation:** The 3D surface plot visualizes a linear regression plane predicting home values from rm and lstat. The red peak (high rooms, low lstat ≈ *$40k+)* contrasts sharply with the blue trough. The hover tooltip confirms precision — at 6.6 rooms and 22% lstat, the model predicts $17,089 — directly actionable for lenders or real estate investors.
+
+
+# Business Applications
+
+## Real Estate and Property Valuation
+
+Real estate firms use multivariate visualization to understand how combinations of property features drive prices. A 3D scatter plot of size, location score, and price helps agents and investors identify undervalued segments of the market [@few2012show].
+
+## Customer Segmentation
+
+Marketing teams often segment customers across three dimensions simultaneously — for example, age, spending score, and income. Interactive 3D scatter plots reveal natural clusters that can inform targeted campaigns.
+
+## Financial Risk Analysis
+
+Risk managers at banks and investment firms use Interactive 3D surface plots to visualize how two risk factors jointly affect portfolio performance or default probability, supporting faster and more intuitive decision-making.
+
+## Supply Chain Optimization
+
+Operations teams can visualize the relationship between lead time, order quantity, and cost in 3D to identify optimal ordering strategies across varying conditions.
+
+
+# Conclusion
+
+Interactive 3D data visualization bridges the gap between raw data and business decision-making. Using R's plotly package and the Boston Housing dataset, we demonstrated how scatter plots and surface plots expose multivariate relationships that traditional 2D charts simply cannot reveal. Whether assessing property risk, segmenting customers, or optimizing operations, the ability to visualize three variables simultaneously gives analysts a decisive edge. However, its power comes with responsibility — Interactive 3D chart is only effective when the third dimension genuinely adds insight, and when delivered in an interactive format that allows exploration. Used wisely, it transforms complex data into clear, actionable intelligence.
+
+
+# References
+
+::: {#refs}
+:::
+
+---
+
+# Affidavit
+
+I hereby affirm that this submitted paper was authored unaided and solely by me. Additionally, no other sources than those in the reference list were used. Parts of this paper, including tables and figures, that have been taken either verbatim or analogously from other works have in each case been properly cited with regard to their origin and authorship. This paper either in parts or in its entirety, be it in the same or similar form, has not been submitted to any other examination board and has not been published.
+
+I acknowledge that the university may use plagiarism detection software to check my thesis. I agree to cooperate with any investigation of suspected plagiarism and to provide any additional information or evidence requested by the university.
+
+**Checklist:**
+
+- [x] The handout contains 3-5 pages of text.
+- [x] The submission contains the Quarto file of the handout.
+- [x] The submission contains the Quarto file of the presentation.
+- [x] The submission contains the HTML file of the handout.
+- [x] The submission contains the HTML file of the presentation.
+- [x] The submission contains the PDF file of the handout.
+- [x] The submission contains the PDF file of the presentation.
+- [x] The title page of the presentation and the handout contain personal details (name, email, matriculation number).
+- [x] The filled out Affidavit.
+- [x] The handout contains a bibliography, created using BibTeX with an APA citation style.
+- [x] Either the handout or the presentation contains R code that proves expertise in coding.
+- [x] The link to the presentation and the handout published on GitHub.
+
+[Amine Elouafi] [19.05.2026] [Köln]
+
+install.packages("webshot2")
+
